@@ -98,6 +98,8 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            /* убираем курсор-указатель и эффекты при наведении */
+            cursor: default;
         }
         
         .data-panel.active {
@@ -125,9 +127,10 @@
         }
         
         .gas-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             margin: 10px 0 5px;
+            color: #2ecc71;
         }
         
         .gas-unit {
@@ -313,11 +316,6 @@
             line-height: 1.6;
         }
         
-        .modal-body p {
-            margin-bottom: 15px;
-            color: #d1d8e0;
-        }
-        
         .loading {
             display: flex;
             align-items: center;
@@ -443,9 +441,10 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1>Мониторинг выходных газов</h1>
-                <p>Актуальные данные по концентрации газов</p>
+                <h1>Мониторинг качества воздуха</h1>
+                <p>Актуальные данные по концентрации газов в атмосфере</p>
             </div>
+            <div class="chart-subtitle" id="lastUpdate">Последнее обновление: --:--:--</div>
         </div>
         
         <div class="main-content">
@@ -458,7 +457,7 @@
                     <div style="display: flex; align-items: center; gap: 15px;">
                         <div class="chart-subtitle">Максимум 2 активных графика одновременно</div>
                         <button class="table-btn" id="tableBtn">
-                            <i class="fas fa-table"></i> История
+                            <i class="fas fa-table"></i> Таблица данных
                         </button>
                     </div>
                 </div>
@@ -486,51 +485,51 @@
                 </div>
             </div>
             
+            <!-- Панели с нормативами (статические данные из файла) -->
             <div class="data-panels">
                 <div class="data-panel" data-gas="NO">
                     <div class="gas-header">
-                        <div class="gas-name">Оксид азота</div>
+                        <div class="gas-name">Азота оксид</div>
                         <div class="gas-formula">NO</div>
                     </div>
-                    <div class="gas-value" id="no-value">--.--</div>
+                    <div class="gas-value">6.78</div>
                     <div class="gas-unit">ㅤ</div>
                     <div class="gas-error"></div>
                 </div>
                 
                 <div class="data-panel" data-gas="NO2">
                     <div class="gas-header">
-                        <div class="gas-name">Диоксид азота</div>
+                        <div class="gas-name">Азота диоксид</div>
                         <div class="gas-formula">NO₂</div>
                     </div>
-                    <div class="gas-value" id="no2-value">--.--</div>
+                    <div class="gas-value">19.14</div>
                     <div class="gas-unit">ㅤ</div>
                     <div class="gas-error">ㅤ</div>
                 </div>
                 
                 <div class="data-panel" data-gas="SO2">
                     <div class="gas-header">
-                        <div class="gas-name">Диоксид серы</div>
+                        <div class="gas-name">Сера диоксид</div>
                         <div class="gas-formula">SO₂</div>
                     </div>
-                    <div class="gas-value" id="so2-value">--.--</div>
+                    <div class="gas-value">34.58</div>
                     <div class="gas-unit">ㅤ</div>
-                    <div class="gas-error"></div>
+                    <div class="gas-error">ㅤ</div>
                 </div>
                 
                 <div class="data-panel" data-gas="CO">
                     <div class="gas-header">
-                        <div class="gas-name">Оксид углерода</div>
+                        <div class="gas-name">Углерода оксид</div>
                         <div class="gas-formula">CO</div>
                     </div>
-                    <div class="gas-value" id="co-value">--.--</div>
+                    <div class="gas-value">79.5</div>
                     <div class="gas-unit">ㅤ</div>
-                    <div class="gas-error"></div>
                 </div>
             </div>
             
             <div class="info-panels">
                 <div class="info-panel">
-                    <h3><i class="fas fa-info-circle"></i> Рекомендации</h3>
+                    <h3><i class="fas fa-info-circle"></i> О показателях</h3>
                     <p>NO (оксид азота) и NO₂ (диоксид азота) образуются при горении топлива. SO₂ (диоксид серы) выделяется при сжигании ископаемого топлива. CO (оксид углерода) — опасный газ без цвета и запаха.</p>
                 </div>
                 
@@ -541,27 +540,60 @@
             </div>
         </div>
         
+        <!-- Кнопка для открытия модального окна с нормативами -->
         <div class="info-btn" id="infoBtn">
-            <i class="fas fa-info"></i>
+            <i class="fas fa-file-excel"></i>
         </div>
         
-        <!-- Модальное окно с информацией -->
+        <!-- Модальное окно с нормативами ИЗАВ -->
         <div class="modal" id="infoModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>О системе мониторинга</h2>
+                    <h2>Нормативы ИЗАВ №0280101 (КБ-11)</h2>
                     <button class="close-modal" id="closeModal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p>Данная панель отображает концентрации газов в атмосфере в реальном времени. Данные обновляются автоматически через API сервера мониторинга.</p>
-                    <p>Графики показывают изменения концентрации за последние 5 минут с интервалом 30 секунд. Вы можете выбрать до двух газов для одновременного отображения.</p>
-                    <p>Каждый активный график отображается на своей оси значений: первый выбранный газ - на левой оси, второй - на правой.</p>
-                    <p>Текущие значения газов отображаются в панелях справа и обновляются каждые 3 секунды.</p>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Наименование</th>
+                                    <th>г/с</th>
+                                    <th>мг/м³ (н.у.)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Углерода оксид</td>
+                                    <td class="value-col">79.5</td>
+                                    <td class="value-col">1349.99</td>
+                                </tr>
+                                <tr>
+                                    <td>Сера диоксид</td>
+                                    <td class="value-col">34.58</td>
+                                    <td class="value-col">587.26</td>
+                                </tr>
+                                <tr>
+                                    <td>Азота оксид</td>
+                                    <td class="value-col">6.78</td>
+                                    <td class="value-col">114.99</td>
+                                </tr>
+                                <tr>
+                                    <td>Азота диоксид</td>
+                                    <td class="value-col">19.14</td>
+                                    <td class="value-col">324.99</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 14px; color: #a5b1c2;">
+                        <i class="fas fa-info-circle"></i> Нормативы выбросов загрязняющих веществ в атмосферный воздух. Утверждены для источника №0280101.
+                    </p>
                 </div>
             </div>
         </div>
         
-        <!-- Модальное окно с таблицей -->
+        <!-- Модальное окно с таблицей данных (динамическое) -->
         <div class="modal" id="tableModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -594,7 +626,7 @@
     </div>
 
     <script>
-        // Обновлённая конфигурация газов
+        // Конфигурация газов для графика (имитация данных)
         const gasConfig = {
             'NO': { mean: 13.7, error: 1.52, color: '#3498db', unit: 'ppm' },
             'NO2': { mean: 0.635, error: 0.646, color: '#2ecc71', unit: 'ppm' },
@@ -607,12 +639,6 @@
         let airChart = null;
         let activeGases = [];
         let chartData = {};
-        let currentValues = {
-            'NO': '--.--',
-            'NO2': '--.--',
-            'SO2': '--.--',
-            'CO': '--.--'
-        };
         
         // Элементы DOM
         const loadingElement = document.getElementById('loading');
@@ -627,24 +653,14 @@
         const tableModal = document.getElementById('tableModal');
         const closeTableModal = document.getElementById('closeTableModal');
         const tableBody = document.getElementById('tableBody');
-        
-        // Элементы для отображения значений
-        const valueElements = {
-            'NO': document.getElementById('no-value'),
-            'NO2': document.getElementById('no2-value'),
-            'SO2': document.getElementById('so2-value'),
-            'CO': document.getElementById('co-value')
-        };
 
         // Функция для генерации меток времени (последние 5 минут, интервал 30 секунд)
         function generateTimeLabels() {
             const labels = [];
-            // 10 точек за 5 минут (300 секунд) с интервалом 30 секунд
             for (let i = 9; i >= 0; i--) {
                 const secondsAgo = i * 30;
                 const minutes = Math.floor(secondsAgo / 60);
                 const seconds = secondsAgo % 60;
-                // Форматируем как "MM:SS"
                 labels.push(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
             }
             return labels;
@@ -652,41 +668,22 @@
 
         // Функция для имитации API запроса данных для графика
         async function fetchChartDataFromAPI(gas) {
-            // Имитация задержки от сервера
             await new Promise(resolve => setTimeout(resolve, 300));
-            
             const config = gasConfig[gas];
             const data = [];
-            
-            // Генерируем данные для 10 точек (5 минут с интервалом 30 секунд)
             for (let i = 0; i < 10; i++) {
-                // Генерируем значение с нормальным распределением вокруг среднего
                 const randomValue = config.mean + (Math.random() - 0.5) * 2 * config.error;
                 data.push(parseFloat(randomValue.toFixed(3)));
             }
-            
             return { labels: generateTimeLabels(), data };
-        }
-        
-        // Функция для имитации API запроса текущего значения
-        async function fetchCurrentValueFromAPI(gas) {
-            // Имитация задержки от сервера
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            const config = gasConfig[gas];
-            
-            // Генерируем текущее значение с нормальным распределением вокруг среднего
-            const randomValue = config.mean + (Math.random() - 0.5) * 2 * config.error;
-            return parseFloat(randomValue.toFixed(3));
         }
 
         // Функция обновления графика
         async function updateChart() {
             loadingElement.style.display = 'flex';
             
-            // Получаем данные для активных газов
             const datasets = [];
-            const allLabels = generateTimeLabels(); // Используем единые метки времени
+            const allLabels = generateTimeLabels();
             
             for (let i = 0; i < activeGases.length; i++) {
                 const gas = activeGases[i];
@@ -694,8 +691,6 @@
                     chartData[gas] = await fetchChartDataFromAPI(gas);
                 }
                 
-                // Определяем ось Y для каждого графика
-                // Первый активный газ - левая ось, второй - правая
                 const yAxisID = i === 0 ? 'y' : 'y1';
                 
                 datasets.push({
@@ -712,17 +707,13 @@
                 });
             }
             
-            // Определяем конфигурацию осей
             const scalesConfig = {
                 x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
                     ticks: {
                         color: 'rgba(255, 255, 255, 0.7)',
                         maxTicksLimit: 10,
-                        callback: function(value, index, values) {
-                            // Показываем все метки времени
+                        callback: function(value, index) {
                             return allLabels[index];
                         }
                     },
@@ -734,88 +725,68 @@
                 }
             };
             
-            // Добавляем левую ось (для первого графика)
             if (activeGases.length > 0) {
                 const firstGas = activeGases[0];
                 scalesConfig.y = {
                     type: 'linear',
                     display: true,
                     position: 'left',
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
                     ticks: {
                         color: gasConfig[firstGas].color,
-                        callback: function(value) {
-                            return value.toFixed(2);
-                        }
+                        callback: value => value.toFixed(2)
                     },
                     title: {
                         display: true,
-                        text: firstGas + ' (' + gasConfig[firstGas].unit + ')',
+                        text: `${firstGas} (${gasConfig[firstGas].unit})`,
                         color: gasConfig[firstGas].color
                     }
                 };
             }
             
-            // Добавляем правую ось (для второго графика)
             if (activeGases.length > 1) {
                 const secondGas = activeGases[1];
                 scalesConfig.y1 = {
                     type: 'linear',
                     display: true,
                     position: 'right',
-                    grid: {
-                        drawOnChartArea: false,
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
+                    grid: { drawOnChartArea: false },
                     ticks: {
                         color: gasConfig[secondGas].color,
-                        callback: function(value) {
-                            return value.toFixed(2);
-                        }
+                        callback: value => value.toFixed(2)
                     },
                     title: {
                         display: true,
-                        text: secondGas + ' (' + gasConfig[secondGas].unit + ')',
+                        text: `${secondGas} (${gasConfig[secondGas].unit})`,
                         color: gasConfig[secondGas].color
                     }
                 };
             }
             
-            // Если график уже существует, обновляем его
             if (airChart) {
                 airChart.data.labels = allLabels;
                 airChart.data.datasets = datasets;
                 airChart.options.scales = scalesConfig;
                 airChart.update();
             } else {
-                // Создаем новый график
                 loadingElement.style.display = 'none';
                 airChart = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: allLabels,
-                        datasets: datasets
-                    },
+                    data: { labels: allLabels, datasets },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: scalesConfig,
                         plugins: {
-                            legend: {
-                                display: false,
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 backgroundColor: 'rgba(0, 0, 0, 0.8)',
                                 titleColor: '#fff',
                                 bodyColor: '#fff',
                                 callbacks: {
-                                    label: function(context) {
+                                    label: context => {
                                         let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
+                                        if (label) label += ': ';
                                         label += context.parsed.y.toFixed(3);
                                         return label;
                                     }
@@ -829,66 +800,6 @@
             loadingElement.style.display = 'none';
             updateActiveGraphsText();
             updateLastUpdateTime();
-        }
-        
-        // Функция обновления текущих значений газов
-        async function updateCurrentValues() {
-            for (const gas of Object.keys(gasConfig)) {
-                const currentValue = await fetchCurrentValueFromAPI(gas);
-                currentValues[gas] = currentValue.toFixed(2);
-                valueElements[gas].textContent = currentValues[gas];
-                
-                // Обновляем цвет значения в зависимости от отклонения от среднего
-                const config = gasConfig[gas];
-                const deviation = Math.abs(currentValue - config.mean);
-                const maxDeviation = config.error * 1.5;
-                
-                if (deviation > maxDeviation) {
-                    valueElements[gas].style.color = '#e74c3c';
-                } else if (deviation > config.error) {
-                    valueElements[gas].style.color = '#f39c12';
-                } else {
-                    valueElements[gas].style.color = '#2ecc71';
-                }
-            }
-        }
-
-        // Функция обновления таблицы данных
-        async function updateTable() {
-            // Получаем данные для всех газов
-            const tableData = {};
-            const timeLabels = generateTimeLabels();
-            
-            for (const gas of Object.keys(gasConfig)) {
-                if (!chartData[gas]) {
-                    chartData[gas] = await fetchChartDataFromAPI(gas);
-                }
-                tableData[gas] = chartData[gas].data;
-            }
-            
-            // Очищаем таблицу
-            tableBody.innerHTML = '';
-            
-            // Заполняем таблицу данными (10 строк)
-            for (let i = 0; i < 10; i++) {
-                const row = document.createElement('tr');
-                
-                // Время
-                const timeCell = document.createElement('td');
-                timeCell.className = 'time-col';
-                timeCell.textContent = timeLabels[i];
-                row.appendChild(timeCell);
-                
-                // Значения для каждого газа
-                ['NO', 'NO2', 'SO2', 'CO'].forEach(gas => {
-                    const valueCell = document.createElement('td');
-                    valueCell.className = 'value-col';
-                    valueCell.textContent = tableData[gas] ? tableData[gas][i].toFixed(3) : '--.--';
-                    row.appendChild(valueCell);
-                });
-                
-                tableBody.appendChild(row);
-            }
         }
 
         // Функция обновления текста активных графиков
@@ -916,18 +827,49 @@
             lastUpdateElement.textContent = `Последнее обновление: ${timeString}`;
         }
 
+        // Функция обновления таблицы данных (динамическая)
+        async function updateTable() {
+            const tableData = {};
+            const timeLabels = generateTimeLabels();
+            
+            for (const gas of Object.keys(gasConfig)) {
+                if (!chartData[gas]) {
+                    chartData[gas] = await fetchChartDataFromAPI(gas);
+                }
+                tableData[gas] = chartData[gas].data;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            for (let i = 0; i < 10; i++) {
+                const row = document.createElement('tr');
+                
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-col';
+                timeCell.textContent = timeLabels[i];
+                row.appendChild(timeCell);
+                
+                ['NO', 'NO2', 'SO2', 'CO'].forEach(gas => {
+                    const valueCell = document.createElement('td');
+                    valueCell.className = 'value-col';
+                    valueCell.textContent = tableData[gas] ? tableData[gas][i].toFixed(3) : '--.--';
+                    row.appendChild(valueCell);
+                });
+                
+                tableBody.appendChild(row);
+            }
+        }
+
         // Обработчики для кнопок управления графиками
         controlButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const gas = this.dataset.gas;
                 
-                // Если кнопка уже активна, деактивируем ее
                 if (this.classList.contains('active')) {
                     const index = activeGases.indexOf(gas);
                     activeGases.splice(index, 1);
                     this.classList.remove('active');
                     
-                    // Обновляем панель данных
                     const dataPanel = document.querySelector(`.data-panel[data-gas="${gas}"]`);
                     dataPanel.classList.remove('active');
                     
@@ -935,54 +877,34 @@
                     return;
                 }
                 
-                // Если уже выбрано 2 газа, убираем первый и добавляем новый
                 if (activeGases.length >= 2) {
                     const removedGas = activeGases.shift();
                     const removedButton = document.querySelector(`.control-btn[data-gas="${removedGas}"]`);
                     removedButton.classList.remove('active');
                     
-                    // Обновляем панель данных
                     const removedPanel = document.querySelector(`.data-panel[data-gas="${removedGas}"]`);
                     removedPanel.classList.remove('active');
                 }
                 
-                // Добавляем новый газ
                 activeGases.push(gas);
                 this.classList.add('active');
                 
-                // Обновляем панель данных
                 const dataPanel = document.querySelector(`.data-panel[data-gas="${gas}"]`);
                 dataPanel.classList.add('active');
                 
                 updateChart();
             });
         });
-        
-        // Обработчики для панелей данных (по клику тоже можно активировать график)
-        dataPanels.forEach(panel => {
-            panel.addEventListener('click', function() {
-                const gas = this.dataset.gas;
-                const button = document.querySelector(`.control-btn[data-gas="${gas}"]`);
-                button.click(); // Имитируем клик по соответствующей кнопке
-            });
-        });
 
-        // Имитация периодического обновления данных с интервалом 3 секунды
+        // Периодическое обновление данных графика (каждые 3 секунды)
         function simulateDataUpdates() {
-            // Каждые 3 секунды обновляем текущие значения и график
             setInterval(async () => {
-                // Обновляем текущие значения
-                await updateCurrentValues();
-                
-                // Если есть активные газы, обновляем данные для графиков
                 if (activeGases.length > 0) {
-                    // Обновляем данные для каждого активного газа
                     for (const gas of activeGases) {
                         const newData = await fetchChartDataFromAPI(gas);
                         chartData[gas] = newData;
                     }
                     
-                    // Если график уже создан, обновляем его
                     if (airChart) {
                         updateChart();
                     }
@@ -992,10 +914,10 @@
                 if (tableModal.style.display === 'flex') {
                     await updateTable();
                 }
-            }, 3000); // 3000 мс = 3 секунды
+            }, 3000);
         }
 
-        // Обработчики для модальных окон
+        // Обработчики модальных окон
         infoBtn.addEventListener('click', function() {
             infoModal.style.display = 'flex';
         });
@@ -1006,7 +928,7 @@
         
         tableBtn.addEventListener('click', async function() {
             tableModal.style.display = 'flex';
-            await updateTable(); // Обновляем таблицу при открытии
+            await updateTable();
         });
         
         closeTableModal.addEventListener('click', function() {
@@ -1022,9 +944,8 @@
             }
         });
 
-        // Инициализация при загрузке страницы
+        // Инициализация
         document.addEventListener('DOMContentLoaded', async function() {
-            // Активируем первые два графика по умолчанию
             const defaultGases = ['NO', 'NO2'];
             defaultGases.forEach(gas => {
                 const button = document.querySelector(`.control-btn[data-gas="${gas}"]`);
@@ -1036,17 +957,11 @@
                 activeGases.push(gas);
             });
             
-            // Загружаем начальные текущие значения
-            await updateCurrentValues();
-            
-            // Запускаем обновление графика
             await updateChart();
-            
-            // Запускаем периодическое обновление данных каждые 3 секунды
             simulateDataUpdates();
         });
 
-        // Обновляем время каждую секунду
+        // Обновление времени каждую секунду
         setInterval(updateLastUpdateTime, 1000);
     </script>
 </body>
