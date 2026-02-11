@@ -176,6 +176,26 @@
             border-color: #3498db;
         }
         
+        .table-btn {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            border-radius: 10px;
+            padding: 10px 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .table-btn:hover {
+            background: rgba(46, 204, 113, 0.3);
+            transform: translateY(-2px);
+        }
+        
         .info-panels {
             display: flex;
             flex-direction: column;
@@ -254,12 +274,14 @@
         .modal-content {
             background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
             width: 90%;
-            max-width: 500px;
+            max-width: 800px;
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .modal-header {
@@ -315,6 +337,46 @@
             margin: 0 auto;
         }
         
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        th {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #d1d8e0;
+        }
+        
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .time-col {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .value-col {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -364,6 +426,16 @@
             .data-panels {
                 grid-template-columns: 1fr;
             }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .table-btn {
+                align-self: flex-start;
+            }
         }
     </style>
 </head>
@@ -371,10 +443,9 @@
     <div class="container">
         <div class="header">
             <div>
-                <h1>Мониторинг качества воздуха</h1>
-                <p>Актуальные данные по концентрации газов в атмосфере</p>
+                <h1>Мониторинг выходных газов</h1>
+                <p>Актуальные данные по концентрации газов</p>
             </div>
-            <div class="chart-subtitle" id="lastUpdate">Последнее обновление: --:--:--</div>
         </div>
         
         <div class="main-content">
@@ -384,7 +455,12 @@
                         <div class="chart-title">Концентрация газов в реальном времени</div>
                         <div class="chart-subtitle">Данные обновляются каждые 3 секунды</div>
                     </div>
-                    <div class="chart-subtitle">Максимум 2 активных графика одновременно</div>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="chart-subtitle">Максимум 2 активных графика одновременно</div>
+                        <button class="table-btn" id="tableBtn">
+                            <i class="fas fa-table"></i> История
+                        </button>
+                    </div>
                 </div>
                 <div id="loading" class="loading">
                     <div class="loading-spinner"></div>
@@ -417,8 +493,8 @@
                         <div class="gas-formula">NO</div>
                     </div>
                     <div class="gas-value" id="no-value">--.--</div>
-                    <div class="gas-unit">ppm</div>
-                    <div class="gas-error">Среднее: 13.7 ± 1.52</div>
+                    <div class="gas-unit">ㅤ</div>
+                    <div class="gas-error"></div>
                 </div>
                 
                 <div class="data-panel" data-gas="NO2">
@@ -427,8 +503,8 @@
                         <div class="gas-formula">NO₂</div>
                     </div>
                     <div class="gas-value" id="no2-value">--.--</div>
-                    <div class="gas-unit">ppm</div>
-                    <div class="gas-error">Среднее: 0.635 ± 0.646</div>
+                    <div class="gas-unit">ㅤ</div>
+                    <div class="gas-error">ㅤ</div>
                 </div>
                 
                 <div class="data-panel" data-gas="SO2">
@@ -437,8 +513,8 @@
                         <div class="gas-formula">SO₂</div>
                     </div>
                     <div class="gas-value" id="so2-value">--.--</div>
-                    <div class="gas-unit">ppm</div>
-                    <div class="gas-error">Среднее: 23.47 ± 2.5</div>
+                    <div class="gas-unit">ㅤ</div>
+                    <div class="gas-error"></div>
                 </div>
                 
                 <div class="data-panel" data-gas="CO">
@@ -447,14 +523,14 @@
                         <div class="gas-formula">CO</div>
                     </div>
                     <div class="gas-value" id="co-value">--.--</div>
-                    <div class="gas-unit">ppm</div>
-                    <div class="gas-error">Среднее: 35.15 ± 4.74</div>
+                    <div class="gas-unit">ㅤ</div>
+                    <div class="gas-error"></div>
                 </div>
             </div>
             
             <div class="info-panels">
                 <div class="info-panel">
-                    <h3><i class="fas fa-info-circle"></i> О показателях</h3>
+                    <h3><i class="fas fa-info-circle"></i> Рекомендации</h3>
                     <p>NO (оксид азота) и NO₂ (диоксид азота) образуются при горении топлива. SO₂ (диоксид серы) выделяется при сжигании ископаемого топлива. CO (оксид углерода) — опасный газ без цвета и запаха.</p>
                 </div>
                 
@@ -469,6 +545,7 @@
             <i class="fas fa-info"></i>
         </div>
         
+        <!-- Модальное окно с информацией -->
         <div class="modal" id="infoModal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -477,9 +554,40 @@
                 </div>
                 <div class="modal-body">
                     <p>Данная панель отображает концентрации газов в атмосфере в реальном времени. Данные обновляются автоматически через API сервера мониторинга.</p>
-                    <p>Графики показывают изменения концентрации за последние 24 часа. Вы можете выбрать до двух газов для одновременного отображения.</p>
+                    <p>Графики показывают изменения концентрации за последние 5 минут с интервалом 30 секунд. Вы можете выбрать до двух газов для одновременного отображения.</p>
                     <p>Каждый активный график отображается на своей оси значений: первый выбранный газ - на левой оси, второй - на правой.</p>
                     <p>Текущие значения газов отображаются в панелях справа и обновляются каждые 3 секунды.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно с таблицей -->
+        <div class="modal" id="tableModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Данные концентрации газов за последние 5 минут</h2>
+                    <button class="close-modal" id="closeTableModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-container">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Время</th>
+                                    <th>NO (ppm)</th>
+                                    <th>NO₂ (ppm)</th>
+                                    <th>SO₂ (ppm)</th>
+                                    <th>CO (ppm)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <!-- Данные будут вставлены через JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 14px; color: #a5b1c2;">
+                        <i class="fas fa-info-circle"></i> Данные обновляются каждые 3 секунды. В таблице показаны значения за последние 5 минут с интервалом 30 секунд.
+                    </p>
                 </div>
             </div>
         </div>
@@ -515,6 +623,10 @@
         const infoModal = document.getElementById('infoModal');
         const closeModal = document.getElementById('closeModal');
         const lastUpdateElement = document.getElementById('lastUpdate');
+        const tableBtn = document.getElementById('tableBtn');
+        const tableModal = document.getElementById('tableModal');
+        const closeTableModal = document.getElementById('closeTableModal');
+        const tableBody = document.getElementById('tableBody');
         
         // Элементы для отображения значений
         const valueElements = {
@@ -524,6 +636,20 @@
             'CO': document.getElementById('co-value')
         };
 
+        // Функция для генерации меток времени (последние 5 минут, интервал 30 секунд)
+        function generateTimeLabels() {
+            const labels = [];
+            // 10 точек за 5 минут (300 секунд) с интервалом 30 секунд
+            for (let i = 9; i >= 0; i--) {
+                const secondsAgo = i * 30;
+                const minutes = Math.floor(secondsAgo / 60);
+                const seconds = secondsAgo % 60;
+                // Форматируем как "MM:SS"
+                labels.push(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+            }
+            return labels;
+        }
+
         // Функция для имитации API запроса данных для графика
         async function fetchChartDataFromAPI(gas) {
             // Имитация задержки от сервера
@@ -531,20 +657,15 @@
             
             const config = gasConfig[gas];
             const data = [];
-            const labels = [];
             
-            // Генерируем данные за последние 24 часа (24 точки)
-            const now = new Date();
-            for (let i = 23; i >= 0; i--) {
-                const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-                labels.push(time.getHours() + ':00');
-                
+            // Генерируем данные для 10 точек (5 минут с интервалом 30 секунд)
+            for (let i = 0; i < 10; i++) {
                 // Генерируем значение с нормальным распределением вокруг среднего
                 const randomValue = config.mean + (Math.random() - 0.5) * 2 * config.error;
                 data.push(parseFloat(randomValue.toFixed(3)));
             }
             
-            return { labels, data };
+            return { labels: generateTimeLabels(), data };
         }
         
         // Функция для имитации API запроса текущего значения
@@ -565,17 +686,12 @@
             
             // Получаем данные для активных газов
             const datasets = [];
-            const allLabels = [];
+            const allLabels = generateTimeLabels(); // Используем единые метки времени
             
             for (let i = 0; i < activeGases.length; i++) {
                 const gas = activeGases[i];
                 if (!chartData[gas]) {
                     chartData[gas] = await fetchChartDataFromAPI(gas);
-                }
-                
-                // Используем метки из первого графика
-                if (allLabels.length === 0) {
-                    allLabels.push(...chartData[gas].labels);
                 }
                 
                 // Определяем ось Y для каждого графика
@@ -604,7 +720,16 @@
                     },
                     ticks: {
                         color: 'rgba(255, 255, 255, 0.7)',
-                        maxTicksLimit: 10
+                        maxTicksLimit: 10,
+                        callback: function(value, index, values) {
+                            // Показываем все метки времени
+                            return allLabels[index];
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Время (минуты:секунды)',
+                        color: 'rgba(255, 255, 255, 0.7)'
                     }
                 }
             };
@@ -728,6 +853,44 @@
             }
         }
 
+        // Функция обновления таблицы данных
+        async function updateTable() {
+            // Получаем данные для всех газов
+            const tableData = {};
+            const timeLabels = generateTimeLabels();
+            
+            for (const gas of Object.keys(gasConfig)) {
+                if (!chartData[gas]) {
+                    chartData[gas] = await fetchChartDataFromAPI(gas);
+                }
+                tableData[gas] = chartData[gas].data;
+            }
+            
+            // Очищаем таблицу
+            tableBody.innerHTML = '';
+            
+            // Заполняем таблицу данными (10 строк)
+            for (let i = 0; i < 10; i++) {
+                const row = document.createElement('tr');
+                
+                // Время
+                const timeCell = document.createElement('td');
+                timeCell.className = 'time-col';
+                timeCell.textContent = timeLabels[i];
+                row.appendChild(timeCell);
+                
+                // Значения для каждого газа
+                ['NO', 'NO2', 'SO2', 'CO'].forEach(gas => {
+                    const valueCell = document.createElement('td');
+                    valueCell.className = 'value-col';
+                    valueCell.textContent = tableData[gas] ? tableData[gas][i].toFixed(3) : '--.--';
+                    row.appendChild(valueCell);
+                });
+                
+                tableBody.appendChild(row);
+            }
+        }
+
         // Функция обновления текста активных графиков
         function updateActiveGraphsText() {
             if (activeGases.length === 0) {
@@ -736,7 +899,7 @@
                 const gasesText = activeGases.map((gas, index) => {
                     const config = gasConfig[gas];
                     const axis = index === 0 ? 'левая ось' : 'правая ось';
-                    return `${gas}: среднее = ${config.mean} ± ${config.error} ${config.unit} (${axis})`;
+                    return `${gas}: среднее = ${config.mean} (${axis})`;
                 }).join('<br>');
                 activeGraphsText.innerHTML = `<strong>Активные графики:</strong><br>${gasesText}`;
             }
@@ -824,10 +987,15 @@
                         updateChart();
                     }
                 }
+                
+                // Обновляем таблицу, если она открыта
+                if (tableModal.style.display === 'flex') {
+                    await updateTable();
+                }
             }, 3000); // 3000 мс = 3 секунды
         }
 
-        // Обработчики для модального окна
+        // Обработчики для модальных окон
         infoBtn.addEventListener('click', function() {
             infoModal.style.display = 'flex';
         });
@@ -835,10 +1003,22 @@
         closeModal.addEventListener('click', function() {
             infoModal.style.display = 'none';
         });
+        
+        tableBtn.addEventListener('click', async function() {
+            tableModal.style.display = 'flex';
+            await updateTable(); // Обновляем таблицу при открытии
+        });
+        
+        closeTableModal.addEventListener('click', function() {
+            tableModal.style.display = 'none';
+        });
 
         window.addEventListener('click', function(event) {
             if (event.target === infoModal) {
                 infoModal.style.display = 'none';
+            }
+            if (event.target === tableModal) {
+                tableModal.style.display = 'none';
             }
         });
 
@@ -870,5 +1050,4 @@
         setInterval(updateLastUpdateTime, 1000);
     </script>
 </body>
-
 </html>
